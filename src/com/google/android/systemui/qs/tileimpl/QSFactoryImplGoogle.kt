@@ -71,7 +71,8 @@ constructor(
     syncTileProvider: Provider<SyncTile>,
     caffeineTileProvider: Provider<CaffeineTile>,
     aodTileProvider: Provider<AlwaysOnDisplayTile>,
-    onTheGoTileProvider: Provider<OnTheGoTile>
+    onTheGoTileProvider: Provider<OnTheGoTile>,
+    cpuInfoTileProvider: Provider<CPUInfoTile>
 ) :
     QSFactoryImpl(
         qsHostLazy,
@@ -109,7 +110,8 @@ constructor(
         syncTileProvider,
         caffeineTileProvider,
         aodTileProvider,
-        onTheGoTileProvider
+        onTheGoTileProvider,
+        cpuInfoTileProvider
 ) {
     override fun createTileInternal(tileSpec: String): QSTileImpl<*>? {
         return when (tileSpec) {
