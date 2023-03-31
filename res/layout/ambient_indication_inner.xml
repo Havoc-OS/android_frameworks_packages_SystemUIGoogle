@@ -14,28 +14,17 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/ambient_indication"
     android:orientation="vertical"
-    android:paddingTop="8dp"
+    android:paddingTop="4dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:forceHasOverlappingRendering="false">
 
-    <ImageView
-        android:id="@+id/docked_top_icon"
-        android:layout_gravity="top|center_horizontal"
-        android:padding="@dimen/dock_top_logo_padding"
-        android:visibility="gone"
-        android:clickable="true"
-        android:layout_width="@dimen/dock_logo_min_size"
-        android:layout_height="@dimen/dock_logo_min_size"
-        android:layout_marginBottom="@dimen/dock_top_logo_margin"
-        android:scaleType="fitXY"
-        android:cropToPadding="true"/>
-
     <LinearLayout
+        android:id="@+id/ambient_indication_info_container"
         android:layout_gravity="center"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
@@ -64,5 +53,18 @@
             android:singleLine="true"
             android:letterSpacing="0.02"
             android:forceHasOverlappingRendering="false"/>
+
     </LinearLayout>
-</LinearLayout>
+
+    <ImageView
+        android:id="@+id/docked_top_icon"
+        android:layout_gravity="top|center_horizontal"
+        android:padding="@dimen/dock_top_logo_padding"
+        android:visibility="gone"
+        android:clickable="true"
+        android:layout_width="@dimen/dock_logo_min_size"
+        android:layout_height="@dimen/dock_logo_min_size"
+        android:scaleType="fitXY"
+        android:cropToPadding="true"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

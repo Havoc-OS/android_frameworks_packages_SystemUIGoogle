@@ -35,8 +35,10 @@ import com.android.internal.app.IBatteryStats;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardUpdateMonitor;
+import com.android.keyguard.logging.KeyguardLogger;
 import com.android.systemui.BootCompleteCache;
 import com.android.systemui.animation.DialogLaunchAnimator;
+import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.biometrics.FaceHelpMessageDeferral;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.broadcast.BroadcastSender;
@@ -47,11 +49,13 @@ import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dock.DockManager;
 import com.android.systemui.dump.DumpManager;
+import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.keyguard.ScreenLifecycle;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.power.EnhancedEstimates;
+import com.android.systemui.recents.OverviewProxyService;
 import com.android.systemui.settings.UserFileManager;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.NotificationClickNotifier;
@@ -63,9 +67,11 @@ import com.android.systemui.statusbar.phone.StatusBarIconController;
 import com.android.systemui.statusbar.policy.BatteryController;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
+import com.android.systemui.temporarydisplay.chipbar.ChipbarCoordinator;
 import com.android.systemui.tuner.TunerService;
 import com.android.systemui.util.DeviceConfigProxy;
 import com.android.systemui.util.concurrency.DelayableExecutor;
+import com.android.systemui.util.settings.GlobalSettings;
 import com.android.systemui.util.settings.SecureSettings;
 import com.android.systemui.util.wakelock.WakeLock;
 import com.google.android.systemui.GoogleServices;
@@ -80,6 +86,7 @@ import com.google.android.systemui.controls.GoogleControlsTileResourceConfigurat
 import com.google.android.systemui.elmyra.ElmyraModule;
 import com.google.android.systemui.elmyra.ServiceConfigurationGoogle;
 import com.google.android.systemui.face.FaceNotificationService;
+import com.google.android.systemui.keyguard.ActiveUnlockChipbarManager;
 import com.google.android.systemui.power.PowerNotificationWarningsGoogleImpl;
 import com.google.android.systemui.power.batteryhealth.HealthManager;
 import com.google.android.systemui.power.batteryhealth.HealthService;
@@ -134,9 +141,11 @@ public interface DependencyProviderGoogle {
             BroadcastDispatcher broadcastDispatcher,
             DevicePolicyManager devicePolicyManager,
             UserManager userManager,
+            UserTracker userTracker,
             Lazy<NotificationVisibilityProvider> visibilityProviderLazy,
             Lazy<CommonNotifCollection> commonNotifCollectionLazy,
             NotificationClickNotifier clickNotifier,
+            Lazy<OverviewProxyService> overviewProxyServiceLazy,
             KeyguardManager keyguardManager,
             StatusBarStateController statusBarStateController,
             @Main Handler mainHandler,
@@ -151,9 +160,11 @@ public interface DependencyProviderGoogle {
                 broadcastDispatcher,
                 devicePolicyManager,
                 userManager,
+                userTracker,
                 visibilityProviderLazy,
                 commonNotifCollectionLazy,
                 clickNotifier,
+                overviewProxyServiceLazy,
                 keyguardManager,
                 statusBarStateController,
                 mainHandler,
@@ -170,13 +181,13 @@ public interface DependencyProviderGoogle {
     static WallpaperNotifier provideWallpaperNotifier(
             Context context,
             CommonNotifCollection commonNotifCollection,
-            BroadcastDispatcher broadcastDispatcher,
-            BroadcastSender broadcastSender) {
+            BroadcastSender broadcastSender,
+            UserTracker userTracker) {
         return new WallpaperNotifier(
                 context,
                 commonNotifCollection,
-                broadcastDispatcher,
-                broadcastSender);
+                broadcastSender,
+                userTracker);
     }
 
     @Provides
@@ -242,11 +253,15 @@ public interface DependencyProviderGoogle {
             @Main DelayableExecutor executor,
             @Background DelayableExecutor bgExecutor,
             FalsingManager falsingManager,
+            AuthController authController,
             LockPatternUtils lockPatternUtils,
             ScreenLifecycle screenLifecycle,
             KeyguardBypassController keyguardBypassController,
             AccessibilityManager accessibilityManager,
-            FaceHelpMessageDeferral faceHelpMessageDeferral) {
+            FaceHelpMessageDeferral faceHelpMessageDeferral,
+            KeyguardLogger keyguardLogger,
+            GlobalSettings globalSettings,
+            FeatureFlags featureFlags) {
         return new KeyguardIndicationControllerGoogle(
                 context,
                 mainLooper,
@@ -264,11 +279,15 @@ public interface DependencyProviderGoogle {
                 executor,
                 bgExecutor,
                 falsingManager,
+                authController,
                 lockPatternUtils,
                 screenLifecycle,
                 keyguardBypassController,
                 accessibilityManager,
-                faceHelpMessageDeferral);
+                faceHelpMessageDeferral,
+                keyguardLogger,
+                globalSettings,
+                featureFlags);
     }
 
     @Provides
@@ -344,7 +363,8 @@ public interface DependencyProviderGoogle {
     @Provides
     @SysUISingleton
     static ControlsTileResourceConfiguration
-    provideControlsTileResourceConfiguration(ControlsController controlsController) {
+            provideControlsTileResourceConfiguration(
+                    ControlsController controlsController) {
         return new GoogleControlsTileResourceConfigurationImpl(controlsController);
     }
 
@@ -387,14 +407,28 @@ public interface DependencyProviderGoogle {
     @Provides
     @SysUISingleton
     static VpnNetworkMonitor provideVpnNetworkMonitor(
-            Context context,
             Resources resources,
             Lazy<VpnNetworkMonitor> networkMonitor,
             AdaptivePPNService adaptivePPNService) {
         return new VpnNetworkMonitor(
-                context,
                 resources,
                 networkMonitor,
                 adaptivePPNService);
+    }
+
+    @Provides
+    @SysUISingleton
+    static ActiveUnlockChipbarManager provideActiveUnlockChipbarManager(
+            FeatureFlags featureFlags,
+            KeyguardUpdateMonitor keyguardUpdateMonitor,
+            ChipbarCoordinator chipbarCoordinator,
+            KeyguardStateController keyguardStateController,
+            GlobalSettings globalSettings) {
+        return new ActiveUnlockChipbarManager(
+                featureFlags,
+                keyguardUpdateMonitor,
+                chipbarCoordinator,
+                keyguardStateController,
+                globalSettings);
     }
 }

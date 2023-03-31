@@ -37,39 +37,34 @@ import javax.inject.Inject
 class GoogleServices
 @Inject
 constructor(
-    context: Context,
+    private val context: Context,
     private val serviceConfigurationGoogle: Lazy<ServiceConfigurationGoogle>,
     private val uiEventLogger: UiEventLogger,
     private val columbusServiceLazy: Lazy<ColumbusServiceWrapper>,
     private val autorotateDataService: AutorotateDataService,
     private val faceNotificationServiceLazy: Lazy<FaceNotificationService>
-) : VendorServices(context) {
-    private val services: ArrayList<Any>
-        get() = arrayListOf()
-
+) : VendorServices() {
+    private val services = ArrayList<Any>()
     override fun start() {
-        addService(DisplayCutoutEmulationAdapter(mContext))
-        addService(CoversheetService(mContext))
-        autorotateDataService.let {
-            it.init()
-            addService(it)
+        addService(DisplayCutoutEmulationAdapter(context))
+        addService(CoversheetService(context))
+        autorotateDataService.run {
+            init()
+            addService(this)
         }
-        when {
-            mContext.packageManager.hasSystemFeature("android.hardware.context_hub")
-                    && ElmyraContext(mContext).isAvailable ->
-                addService(ElmyraService(mContext, serviceConfigurationGoogle.get(), uiEventLogger))
+        if (context.packageManager.hasSystemFeature("android.hardware.context_hub")
+            && ElmyraContext(context).isAvailable
+        ) {
+            addService(ElmyraService(context, serviceConfigurationGoogle.get(), uiEventLogger))
         }
-        when {
-            mContext.packageManager.hasSystemFeature("com.google.android.feature.QUICK_TAP") ->
-                addService(columbusServiceLazy.get())
+        if (context.packageManager.hasSystemFeature("com.google.android.feature.QUICK_TAP")) {
+            addService(columbusServiceLazy.get())
         }
-        when {
-            mContext.packageManager.hasSystemFeature("android.hardware.biometrics.face") ->
-                addService(faceNotificationServiceLazy.get())
+        if (context.packageManager.hasSystemFeature("android.hardware.biometrics.face")) {
+            addService(faceNotificationServiceLazy.get())
         }
-        when {
-            mContext.resources.getBoolean(KtR.bool.config_touch_context_enabled) ->
-                addService(TouchContextService(mContext))
+        if (context.resources.getBoolean(KtR.bool.config_touch_context_enabled)) {
+            addService(TouchContextService(context))
         }
     }
 

@@ -29,8 +29,6 @@ import com.android.systemui.assist.AssistManager
 import com.android.systemui.Dependency.*
 import com.android.systemui.KtR
 import com.android.systemui.biometrics.AlternateUdfpsTouchProvider
-import com.android.systemui.biometrics.AuthController
-import com.android.systemui.biometrics.UdfpsDisplayModeProvider
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.GlobalRootComponent
 import com.android.systemui.dagger.SysUISingleton
@@ -53,17 +51,16 @@ import com.android.systemui.settings.UserContentResolverProvider
 import com.android.systemui.shade.NotificationShadeWindowControllerImpl
 import com.android.systemui.shade.ShadeController
 import com.android.systemui.shade.ShadeControllerImpl
+import com.android.systemui.shade.ShadeExpansionStateManager
 import com.android.systemui.statusbar.*
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager
 import com.android.systemui.statusbar.phone.*
 import com.android.systemui.statusbar.policy.*
 import com.android.systemui.volume.dagger.VolumeModule
-import com.android.systemui.util.concurrency.Execution
 import com.google.android.systemui.assist.AssistManagerGoogle
 import com.google.android.systemui.NotificationLockscreenUserManagerGoogle
 import com.google.android.systemui.fingerprint.FingerprintExtProvider
-import com.google.android.systemui.fingerprint.UdfpsDisplayMode
 import com.google.android.systemui.fingerprint.UdfpsTouchProvider
 import com.google.android.systemui.gesture.GestureModuleGoogle
 import com.google.android.systemui.power.dagger.PowerModuleGoogle
@@ -77,6 +74,7 @@ import com.google.android.systemui.smartspace.dagger.SmartspaceGoogleModule
 import com.google.android.systemui.statusbar.KeyguardIndicationControllerGoogle
 import com.google.android.systemui.statusbar.dagger.StartCentralSurfacesGoogleModule
 import com.google.android.systemui.statusbar.policy.BatteryControllerImplGoogle
+import com.google.android.systemui.statusbar.policy.GooglePolicyModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -91,6 +89,7 @@ import javax.inject.Named
     includes = [
         GestureModule::class,
         GestureModuleGoogle::class,
+        GooglePolicyModule::class,
         MediaModule::class,
         PowerModuleGoogle::class,
         QSModuleGoogle::class,
@@ -144,9 +143,6 @@ abstract class SystemUIGoogleModule {
     ): KeyguardIndicationController
 
     @Binds
-    abstract fun bindUdfpsDisplayMode(udfps: UdfpsDisplayMode): UdfpsDisplayModeProvider
-
-    @Binds
     abstract fun bindUdfpsTouchProvider(udfpsTouch: UdfpsTouchProvider): AlternateUdfpsTouchProvider
 
     @Binds
@@ -159,37 +155,6 @@ abstract class SystemUIGoogleModule {
         @Named(LEAK_REPORT_EMAIL_NAME)
         fun provideLeakReportEmail(): String {
             return "buganizer-system+187317@google.com"
-        }
-
-        @Provides
-        @SysUISingleton
-        fun provideBatteryController(
-            context: Context,
-            enhancedEstimates: EnhancedEstimates,
-            powerManager: PowerManager,
-            broadcastDispatcher: BroadcastDispatcher,
-            demoModeController: DemoModeController,
-            dumpManager: DumpManager,
-            @Main mainHandler: Handler,
-            @Background bgHandler: Handler,
-            contentResolver: UserContentResolverProvider,
-            reverseChargingController: ReverseChargingController
-        ): BatteryController {
-            val bC: BatteryController =
-                BatteryControllerImplGoogle(
-                    context,
-                    enhancedEstimates,
-                    powerManager,
-                    broadcastDispatcher,
-                    demoModeController,
-                    dumpManager,
-                    mainHandler,
-                    bgHandler,
-                    contentResolver,
-                    reverseChargingController
-                )
-            with(bC) { init() }
-            return bC
         }
 
         @Provides
@@ -262,7 +227,8 @@ abstract class SystemUIGoogleModule {
             configurationController: ConfigurationController,
             @Main handler: Handler,
             accessibilityManagerWrapper: AccessibilityManagerWrapper,
-            uiEventLogger: UiEventLogger
+            uiEventLogger: UiEventLogger,
+            shadeExpansionStateManager: ShadeExpansionStateManager
         ): HeadsUpManagerPhone {
             return HeadsUpManagerPhone(
                 context,
@@ -274,7 +240,8 @@ abstract class SystemUIGoogleModule {
                 configurationController,
                 handler,
                 accessibilityManagerWrapper,
-                uiEventLogger
+                uiEventLogger,
+                shadeExpansionStateManager
             )
         }
 

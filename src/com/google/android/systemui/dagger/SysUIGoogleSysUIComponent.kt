@@ -17,8 +17,11 @@
 package com.google.android.systemui.dagger
 
 import com.android.systemui.dagger.*
+import com.android.systemui.keyguard.CustomizationProvider
 import com.android.systemui.keyguard.dagger.KeyguardModule
 import com.android.systemui.recents.RecentsModule
+import com.android.systemui.statusbar.NotificationInsetsModule
+import com.android.systemui.statusbar.QsFrameTranslateModule
 import com.google.android.systemui.keyguard.KeyguardSliceProviderGoogle
 import com.google.android.systemui.smartspace.KeyguardSmartspaceStartable
 import com.google.android.systemui.statusbar.dagger.CentralSurfacesGoogleModule
@@ -33,6 +36,8 @@ import dagger.Subcomponent
         DependencyProvider::class,
         DependencyProviderGoogle::class,
         KeyguardModule::class,
+        NotificationInsetsModule::class,
+        QsFrameTranslateModule::class,
         RecentsModule::class,
         SystemUIModule::class,
         SysUIGoogleCoreStartableModule::class,
@@ -52,4 +57,7 @@ interface SysUIGoogleSysUIComponent : SysUIComponent {
 
     /** Member injection into KeyguardSliceProviderGoogle. */
     fun KeyguardSliceProviderGoogle.inject()
+
+    /** Member injection into the supplied argument. */
+    fun CustomizationProvider.inject()
 }

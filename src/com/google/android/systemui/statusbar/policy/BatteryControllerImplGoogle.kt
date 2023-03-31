@@ -34,9 +34,13 @@ import com.android.systemui.statusbar.policy.BatteryControllerImpl
 import com.google.android.systemui.reversecharging.ReverseChargingController
 import com.google.android.systemui.reversecharging.ReverseChargingController.ReverseChargingChangeCallback
 import java.io.PrintWriter
+import java.util.function.Consumer
+import javax.inject.Inject
 
 @SysUISingleton
-open class BatteryControllerImplGoogle(
+open class BatteryControllerImplGoogle
+@Inject
+constructor(
     context: Context,
     enhancedEstimates: EnhancedEstimates,
     powerManager: PowerManager,
@@ -57,8 +61,7 @@ open class BatteryControllerImplGoogle(
         dumpManager,
         mainHandler,
         bgHandler
-    ),
-    ReverseChargingChangeCallback {
+    ), ReverseChargingChangeCallback {
     protected val contentObserver: ContentObserver
     private var extremeSaver = false
     private var rtxLevel = 0
@@ -67,13 +70,11 @@ open class BatteryControllerImplGoogle(
 
     init {
         object : ContentObserver(bgHandler) {
-                override fun onChange(selfChange: Boolean, uri: Uri?) {
-                    if (DEBUG) {
-                        Log.d(TAG, "Change in EBS value $uri")
-                    }
-                    setExtremeSaver(isExtremeSaver)
-                }
-            }.also { contentObserver = it }
+            override fun onChange(selfChange: Boolean, uri: Uri?) {
+                if (DEBUG) Log.d(TAG, "Change in EBS value $uri")
+                setExtremeSaver(isExtremeBatterySaving())
+            }
+        }.also { contentObserver = it }
     }
 
     override fun init() {
@@ -135,9 +136,7 @@ open class BatteryControllerImplGoogle(
     }
 
     override fun setReverseState(isReverse: Boolean) {
-        if (isReverseSupported) {
-            reverseChargingController.run { setReverseState(isReverse) }
-        }
+        reverseChargingController.run { setReverseState(isReverse) }
     }
 
     private fun resetReverseInfo() {
@@ -147,43 +146,43 @@ open class BatteryControllerImplGoogle(
     }
 
     open fun setExtremeSaver(isExtreme: Boolean) {
-        if (isExtreme != extremeSaver) {
-            extremeSaver = isExtreme
-            fireExtremeSaverChanged()
+        when {
+            isExtreme != extremeSaver -> {
+                extremeSaver = isExtreme
+                fireExtremeSaverChanged()
+            }
         }
     }
 
     private fun fireExtremeSaverChanged() {
         synchronized(mChangeCallbacks) {
-            mChangeCallbacks.indices.forEach {
-                mChangeCallbacks[it].onExtremeBatterySaverChanged(extremeSaver)
-            }
+            mChangeCallbacks.forEach(Consumer {
+                it.onExtremeBatterySaverChanged(extremeSaver)
+            })
         }
     }
 
     private fun fireReverseChanged() {
         synchronized(mChangeCallbacks) {
-            mChangeCallbacks.indices.forEach {
-                mChangeCallbacks[it].onReverseChanged(rtxReverse, rtxLevel, rtxName)
-            }
+            mChangeCallbacks.forEach(Consumer {
+                it.onReverseChanged(rtxReverse, rtxLevel, rtxName)
+            })
         }
     }
 
-    open val isExtremeSaver: Boolean
-        get() {
-            val bundle =
-                try {
-                    contentResolverProvider.userContentResolver.call(
-                        EBS_STATE_AUTHORITY,
-                        "get_flipendo_state",
-                        null,
-                        Bundle()
-                    )
-                } catch (ex: IllegalArgumentException) {
-                    Bundle()
-                }
-            return bundle?.getBoolean("flipendo_state", false) ?: false
+    open fun isExtremeBatterySaving(): Boolean {
+        val bundle = try {
+            contentResolverProvider.userContentResolver.call(
+                EBS_STATE_AUTHORITY,
+                "get_flipendo_state",
+                null,
+                Bundle()
+            )
+        } catch (ex: IllegalArgumentException) {
+            Bundle()
         }
+        return bundle!!.getBoolean("flipendo_state", false)
+    }
 
     override fun dump(pw: PrintWriter, args: Array<String>) {
         super.dump(pw, args)

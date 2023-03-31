@@ -151,7 +151,10 @@ constructor(
             reverse             -> Tile.STATE_ACTIVE
             else                -> Tile.STATE_INACTIVE
         }.also { state.state = it }
-        state.icon = ResourceIcon.get(KtR.drawable.ic_qs_reverse_charging)
+        when (state.state) {
+            Tile.STATE_ACTIVE -> ResourceIcon.get(KtR.drawable.qs_battery_share_icon_on)
+            else              -> ResourceIcon.get(KtR.drawable.qs_battery_share_icon_off)
+        }.also { state.icon = it }
         state.label = tileLabel
         state.contentDescription = tileLabel
         state.expandedAccessibilityClassName = Switch::class.java.name

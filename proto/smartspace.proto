@@ -20,9 +20,18 @@ package systemui;
 option java_package = "com.android.systemui.smartspace";
 option java_outer_classname = "SmartspaceProto";
 
+message SmartspaceCardDimensionalInfo {
+    repeated SmartspaceFeatureDimension featureDimensions = 1;
+}
+
 message SmartSpaceCardMetadata {
     int32 instanceId = 1;
     int32 cardTypeId = 2;
+}
+
+message SmartspaceFeatureDimension {
+    int32 featureDimensionId = 1;
+    int32 featureDimensionValue = 2;
 }
 
 message SmartSpaceSubcards {

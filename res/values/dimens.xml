@@ -62,7 +62,7 @@
     <dimen name="dock_logo_min_size">48dp</dimen>
     <dimen name="dock_photo_diff">48dp</dimen>
     <dimen name="dock_promo_padding">48dp</dimen>
-    <dimen name="dock_top_logo_margin">12dp</dimen>
+    <dimen name="dock_top_logo_margin">6dp</dimen>
     <dimen name="dock_top_logo_padding">8dp</dimen>
     <dimen name="elmyra_progress_alpha">0.35</dimen>
     <dimen name="elmyra_progress_detect_threshold">0.5</dimen>

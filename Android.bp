@@ -15,11 +15,17 @@
 
 soong_config_module_type_import {
     from: "frameworks/base/packages/SystemUI/Android.bp",
-    module_types: ["systemui_optimized_java_defaults"],
+    module_types: [
+        "systemui_compose_java_defaults",
+        "systemui_optimized_java_defaults",
+    ],
 }
 
 android_library {
     name: "SystemUIGoogle-core",
+    defaults: [
+        "SystemUI_compose_defaults",
+    ],
     srcs: [
         "src/**/*.java",
         "src/**/*.kt",
@@ -32,6 +38,7 @@ android_library {
         "SystemUI-core",
         "SystemUIPluginLib",
         "SystemUISharedLib",
+        "SystemUICustomizationLib",
         "guava-android",
         "SystemUIGoogleLib",
         "android.frameworks.stats-V1-java",
@@ -105,6 +112,7 @@ android_app {
     dxflags: ["--multi-dex"],
     required: [
         "privapp_whitelist_com.google.android.systemui",
+        "wmshell.protolog.json.gz",
     ],
 }
 

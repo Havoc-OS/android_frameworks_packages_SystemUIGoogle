@@ -38,6 +38,8 @@ public class KtR {
 
     public static final class drawable {
         public static int ic_qs_reverse_charging = R.drawable.ic_qs_reverse_charging;
+        public static int qs_battery_share_icon_off = R.drawable.qs_battery_share_icon_off;
+        public static int qs_battery_share_icon_on = R.drawable.qs_battery_share_icon_on;
     }
 
     public static final class id {

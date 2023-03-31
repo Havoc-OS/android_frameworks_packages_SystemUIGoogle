@@ -26,12 +26,11 @@ import android.text.TextUtils
 import android.view.View
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.R
-import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.plugins.BcSmartspaceDataPlugin
 import com.android.systemui.plugins.BcSmartspaceDataPlugin.SmartspaceView
-import com.android.systemui.settings.CurrentUserTracker
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.NotificationMediaManager
 import com.android.systemui.statusbar.NotificationMediaManager.MediaListener
 import com.android.systemui.util.concurrency.DelayableExecutor
@@ -42,16 +41,15 @@ class KeyguardMediaViewController
 @Inject
 constructor(
     private val context: Context,
+    private val userTracker: UserTracker,
     private val plugin: BcSmartspaceDataPlugin,
     @Main private val uiExecutor: DelayableExecutor,
     private val mediaManager: NotificationMediaManager,
-    private val broadcastDispatcher: BroadcastDispatcher
 ) {
     private var mediaArtist: CharSequence? = null
     private var mediaTitle: CharSequence? = null
     private val mediaComponent: ComponentName
     private val mediaListener: MediaListener
-    private var userTracker: CurrentUserTracker? = null
     @get:VisibleForTesting var smartspaceView: SmartspaceView? = null
 
     init {
@@ -82,9 +80,6 @@ constructor(
                 }
             )
         }
-        object : CurrentUserTracker(broadcastDispatcher) {
-                override fun onUserSwitched(newUserId: Int) = reset()
-            }.also { userTracker = it }
     }
 
     fun updateMediaInfo(metadata: MediaMetadata?, @PlaybackState.State state: Int) {
@@ -110,14 +105,12 @@ constructor(
                         .setSubtitle(mediaArtist)
                         .setIcon(mediaManager.mediaIcon)
                         .build()
-                val currentUserTracker: CurrentUserTracker = userTracker
-                    ?: throw UninitializedPropertyAccessException("userTracker")
                 if (smartspaceView != null) {
                     val deviceMedia: SmartspaceTarget.Builder =
                         SmartspaceTarget.Builder(
                                 "deviceMedia",
                                 mediaComponent,
-                                UserHandle.of(currentUserTracker.currentUserId)
+                                UserHandle.of(userTracker.userId)
                             )
                             .setFeatureType(41)
                             .setHeaderAction(deviceMediaTitle)

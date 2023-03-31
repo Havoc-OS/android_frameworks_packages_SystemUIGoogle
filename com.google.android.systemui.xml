@@ -15,7 +15,6 @@
      limitations under the License.
 -->
 <permissions>
-
     <privapp-permissions package="com.android.systemui">
         <permission name="android.permission.ACCESS_AMBIENT_CONTEXT_EVENT"/>
         <permission name="android.permission.ACCESS_CONTEXT_HUB"/>
@@ -59,6 +58,7 @@
         <permission name="android.permission.CHANGE_WIFI_STATE"/>
         <permission name="android.permission.CONFIGURE_WIFI_DISPLAY"/>
         <permission name="android.permission.CONFIGURE_WIFI_DISPLAY"/>
+        <permission name="android.permission.CONTROL_DEVICE_STATE"/>
         <permission name="android.permission.CONTROL_DISPLAY_BRIGHTNESS"/>
         <permission name="android.permission.CONTROL_DISPLAY_COLOR_TRANSFORMS"/>
         <permission name="android.permission.CONTROL_KEYGUARD"/>
@@ -209,5 +209,4 @@
         <permission name="com.google.restricted_assist_gesture.permission.RESTRICTED_ASSIST_GESTURE_PROVIDER"/>
         <permission name="com.google.sensor.elmyra.permission.USE_RAW_SENSOR"/>
     </privapp-permissions>
-
 </permissions>

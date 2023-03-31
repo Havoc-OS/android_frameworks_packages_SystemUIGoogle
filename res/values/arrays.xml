@@ -33,7 +33,16 @@
         <item>com.google.columbustest</item>
     </array>
 
+    <array name="config_appsSupportMultiInstancesSplit">
+        <item>com.android.chrome</item>
+    </array>
+
     <array name="config_dock_bound_components"/>
+    <array name="config_dock_setup_completed_packages"/>
+    <array name="config_dock_setup_disallowed_components">
+        <item>com.google.android.apps.nexuslauncher/com.android.quickstep.interaction.AllSetActivity</item>
+    </array>
+
     <array name="config_nfc_conflict_with_usb_audio_productid"/>
     <array name="config_nfc_conflict_with_usb_audio_vendorid"/>
 

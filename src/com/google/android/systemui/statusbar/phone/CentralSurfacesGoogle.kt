@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@file:Suppress("DEPRECATION")
 package com.google.android.systemui.statusbar.phone
 
 import android.app.AlarmManager
@@ -50,13 +51,16 @@ import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.KeyguardViewMediator
 import com.android.systemui.keyguard.ScreenLifecycle
 import com.android.systemui.keyguard.WakefulnessLifecycle
+import com.android.systemui.keyguard.ui.viewmodel.LightRevealScrimViewModel
 import com.android.systemui.navigationbar.NavigationBarController
 import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.plugins.PluginDependencyProvider
+import com.android.systemui.plugins.PluginManager
 import com.android.systemui.recents.ScreenPinningRequest
 import com.android.systemui.settings.brightness.BrightnessSliderController
+import com.android.systemui.shade.CameraLauncher
 import com.android.systemui.shade.ShadeController
-import com.android.systemui.shared.plugins.PluginManager
+import com.android.systemui.shade.ShadeExpansionStateManager
 import com.android.systemui.statusbar.*
 import com.android.systemui.statusbar.notification.DynamicPrivacyController
 import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator
@@ -67,7 +71,6 @@ import com.android.systemui.statusbar.notification.row.NotificationGutsManager
 import com.android.systemui.statusbar.phone.*
 import com.android.systemui.statusbar.phone.dagger.CentralSurfacesComponent
 import com.android.systemui.statusbar.phone.ongoingcall.OngoingCallController
-import com.android.systemui.statusbar.phone.panelstate.PanelExpansionStateManager
 import com.android.systemui.statusbar.policy.*
 import com.android.systemui.statusbar.policy.BatteryController.BatteryStateChangeCallback
 import com.android.systemui.statusbar.window.StatusBarWindowController
@@ -99,14 +102,14 @@ constructor(
     private val smartSpaceController: SmartSpaceController,
     private val wallpaperNotifier: WallpaperNotifier,
     private val reverseChargingViewControllerOptional: Optional<ReverseChargingViewController>,
-    context: Context,
+    private val context: Context,
     notificationsController: NotificationsController,
     fragmentService: FragmentService,
     lightBarController: LightBarController,
     autoHideController: AutoHideController,
     statusBarWindowController: StatusBarWindowController,
     statusBarWindowStateController: StatusBarWindowStateController,
-    keyguardUpdateMonitor: KeyguardUpdateMonitor,
+    private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
     statusBarSignalPolicy: StatusBarSignalPolicy,
     pulseExpansionHandler: PulseExpansionHandler,
     notificationWakeUpCoordinator: NotificationWakeUpCoordinator,
@@ -120,7 +123,7 @@ constructor(
     notificationGutsManager: NotificationGutsManager,
     notificationLogger: NotificationLogger,
     notificationInterruptStateProvider: NotificationInterruptStateProvider,
-    panelExpansionStateManager: PanelExpansionStateManager,
+    shadeExpansionStateManager: ShadeExpansionStateManager,
     keyguardViewMediator: KeyguardViewMediator,
     displayMetrics: DisplayMetrics,
     metricsLogger: MetricsLogger,
@@ -187,6 +190,8 @@ constructor(
     deviceStateManager: DeviceStateManager,
     wiredChargingRippleController: WiredChargingRippleController,
     dreamManager: IDreamManager,
+    cameraLauncherLazy: Lazy<CameraLauncher>,
+    lightRevealScrimViewModelLazy: Lazy<LightRevealScrimViewModel>,
     tunerService: TunerService
 ) :
     CentralSurfacesImpl(
@@ -211,7 +216,7 @@ constructor(
         notificationGutsManager,
         notificationLogger,
         notificationInterruptStateProvider,
-        panelExpansionStateManager,
+        shadeExpansionStateManager,
         keyguardViewMediator,
         displayMetrics,
         metricsLogger,
@@ -277,6 +282,8 @@ constructor(
         deviceStateManager,
         wiredChargingRippleController,
         dreamManager,
+        cameraLauncherLazy,
+        lightRevealScrimViewModelLazy,
         tunerService
     ) {
     private var animStartTime: Long = 0
@@ -347,9 +354,9 @@ constructor(
             notificationShadeWindowView.findViewById<AmbientIndicationContainer>(
                 KtR.id.ambient_indication_container
             )
-        ambientIndicationContainer.initializeView(this)
+        ambientIndicationContainer.initializeView(this, keyguardUpdateMonitor)
         val ambientIndicationService =
-            AmbientIndicationService(mContext, ambientIndicationContainer, alarmManager)
+            AmbientIndicationService(context, ambientIndicationContainer, alarmManager)
         ambientIndicationService.run(AmbientIndicationService::start)
     }
 
