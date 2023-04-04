@@ -18,7 +18,6 @@ package com.google.android.systemui.dagger
 import com.android.keyguard.KeyguardBiometricLockoutLogger
 import com.android.systemui.ChooserSelector
 import com.android.systemui.CoreStartable
-import com.android.systemui.CPUInfoManager
 import com.android.systemui.LatencyTester
 import com.android.systemui.ScreenDecorations
 import com.android.systemui.SliceBroadcastRelayHandler
@@ -295,10 +294,4 @@ abstract class SysUIGoogleCoreStartableModule {
     @IntoMap
     @ClassKey(VpnNetworkMonitor::class)
     abstract fun bindVpnNetworkMonitor(sysui: VpnNetworkMonitor): CoreStartable
-
-    /** Inject into CPUInfoManager. */
-    @Binds
-    @IntoMap
-    @ClassKey(CPUInfoManager::class)
-    abstract fun bindCPUInfoManager(sysui: CPUInfoManager): CoreStartable
 }

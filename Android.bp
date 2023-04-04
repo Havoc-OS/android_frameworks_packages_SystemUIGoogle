@@ -16,8 +16,7 @@
 soong_config_module_type_import {
     from: "frameworks/base/packages/SystemUI/Android.bp",
     module_types: [
-        "systemui_compose_java_defaults",
-        "systemui_optimized_java_defaults",
+        "systemui_compose_java_defaults"
     ],
 }
 
@@ -60,31 +59,10 @@ android_library {
     plugins: ["dagger2-compiler"],
 }
 
-systemui_optimized_java_defaults {
-    name: "SystemUIGoogle_app_defaults",
-    soong_config_variables: {
-        SYSTEMUI_OPTIMIZE_JAVA: {
-            optimize: {
-                enabled: true,
-                optimize: true,
-                shrink: true,
-                proguard_compatibility: false,
-                proguard_flags_files: ["systemui-google.pro"],
-            },
-            conditions_default: {
-                optimize: {
-                    proguard_flags_files: ["systemui-google.pro"],
-                },
-            },
-        },
-    },
-}
-
 android_app {
     name: "SystemUIGoogle",
     defaults: [
-        "platform_app_defaults",
-        "SystemUIGoogle_app_defaults",
+        "platform_app_defaults"
     ],
     static_libs: [
         "SystemUIGoogle-core"
@@ -106,6 +84,10 @@ android_app {
     system_ext_specific: true,
     certificate: "platform",
     privileged: true,
+
+    optimize: {
+        proguard_flags_files: ["systemui-google.pro"],
+    },
 
     kotlincflags: ["-Xjvm-default=enable"],
 

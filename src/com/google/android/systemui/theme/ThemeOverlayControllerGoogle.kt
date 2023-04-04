@@ -71,6 +71,7 @@ constructor(
         bgExecutor,
         themeOverlayApplier,
         secureSettings,
+        systemSettings,
         wallpaperManager,
         userManager,
         deviceProvisionedController,
@@ -79,7 +80,7 @@ constructor(
         featureFlags,
         resources,
         wakefulnessLifecycle,
-        systemSettings
+        configurationController
     ) {
     init {
         configurationController.addCallback(

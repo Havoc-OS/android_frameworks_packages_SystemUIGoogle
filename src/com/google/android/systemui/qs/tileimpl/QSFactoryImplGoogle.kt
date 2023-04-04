@@ -68,11 +68,16 @@ constructor(
     oneHandedModeTileProvider: Provider<OneHandedModeTile>,
     colorCorrectionTileProvider: Provider<ColorCorrectionTile>,
     dreamTileProvider: Provider<DreamTile>,
-    syncTileProvider: Provider<SyncTile>,
+    ambientDisplayTileProvider: Provider<AmbientDisplayTile> ,
+    aodTileProvider: Provider<AODTile>,
     caffeineTileProvider: Provider<CaffeineTile>,
-    aodTileProvider: Provider<AlwaysOnDisplayTile>,
-    onTheGoTileProvider: Provider<OnTheGoTile>,
-    cpuInfoTileProvider: Provider<CPUInfoTile>
+    headsUpTileProvider: Provider<HeadsUpTile>,
+    powerShareTileProvider: Provider<PowerShareTile>,
+    profilesTileProvider: Provider<ProfilesTile>,
+    readingModeTileProvider: Provider<ReadingModeTile>,
+    syncTileProvider: Provider<SyncTile>,
+    usbTetherTileProvider: Provider<UsbTetherTile>,
+    vpnTileProvider: Provider<VpnTile>
 ) :
     QSFactoryImpl(
         qsHostLazy,
@@ -107,12 +112,17 @@ constructor(
         oneHandedModeTileProvider,
         colorCorrectionTileProvider,
         dreamTileProvider,
-        syncTileProvider,
-        caffeineTileProvider,
+        ambientDisplayTileProvider,
         aodTileProvider,
-        onTheGoTileProvider,
-        cpuInfoTileProvider
-) {
+        caffeineTileProvider,
+        headsUpTileProvider,
+        powerShareTileProvider,
+        profilesTileProvider,
+        readingModeTileProvider,
+        syncTileProvider,
+        usbTetherTileProvider,
+        vpnTileProvider
+    ) {
     override fun createTileInternal(tileSpec: String): QSTileImpl<*>? {
         return when (tileSpec) {
             "rotation" -> rotationLockTileGoogleProvider.get()
