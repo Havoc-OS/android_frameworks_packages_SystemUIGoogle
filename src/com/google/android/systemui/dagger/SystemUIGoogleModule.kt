@@ -59,6 +59,7 @@ import com.android.systemui.statusbar.phone.*
 import com.android.systemui.statusbar.policy.*
 import com.android.systemui.volume.dagger.VolumeModule
 import com.google.android.systemui.assist.AssistManagerGoogle
+import com.google.android.systemui.columbus.ColumbusBinderModule
 import com.google.android.systemui.NotificationLockscreenUserManagerGoogle
 import com.google.android.systemui.fingerprint.FingerprintExtProvider
 import com.google.android.systemui.fingerprint.UdfpsTouchProvider
@@ -96,7 +97,8 @@ import javax.inject.Named
         ScreenshotModuleGoogle::class,
         SmartspaceGoogleModule::class,
         StartCentralSurfacesGoogleModule::class,
-        VolumeModule::class
+        VolumeModule::class,
+        ColumbusBinderModule::class
     ],
     subcomponents = []
 )

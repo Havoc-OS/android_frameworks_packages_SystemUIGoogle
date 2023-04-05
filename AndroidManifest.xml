@@ -91,7 +91,7 @@
         </service>
 
         <service
-            android:name="com.google.android.systemui.columbus.ColumbusTargetRequestService"
+            android:name="com.google.android.systemui.columbus.ColumbusTargetRequestServiceWrapper"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.systemui.QUICK_TAP_TARGET_REQUEST"/>
