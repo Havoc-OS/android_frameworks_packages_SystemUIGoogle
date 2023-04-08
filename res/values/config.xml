@@ -22,7 +22,7 @@
 
     <!-- Tiles native to System UI. Order should match "quick_settings_tiles_default" -->
     <string name="quick_settings_tiles_stock" translatable="false">
-        internet,wifi,cell,bt,flashlight,dnd,alarm,airplane,nfc,controls,wallet,rotation,battery,cast,screenrecord,mictoggle,cameratoggle,location,hotspot,inversion,saver,dark,work,night,reverse,reduce_brightness,qr_code_scanner,onehanded,color_correction,dream,ambient_display,aod,caffeine,heads_up,reading_mode,sync,powershare,profiles,usb_tether,vpn
+        internet,wifi,cell,bt,flashlight,dnd,alarm,airplane,nfc,controls,wallet,rotation,qr_code_scanner,battery,cast,screenrecord,(com.google.android.gms/.nearby.sharing.SharingTileService),mictoggle,cameratoggle,location,custom(com.google.android.permissioncontroller/com.android.permissioncontroller.permission.service.SafetyCenterQsTileService),hotspot,inversion,saver,dark,work,night,reverse,reduce_brightness,onehanded,color_correction,dream,ott,ambient_display,aod,caffeine,heads_up,reading_mode,sync,powershare,profiles,usb_tether,vpn
     </string>
 
     <!-- SystemUI Plugins that can be loaded on user builds. -->
